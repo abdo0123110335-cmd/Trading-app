@@ -6,8 +6,8 @@ import 'package:binance_spot_pro/core/api/api_exceptions.dart';
 sealed class Result<T> {
   const Result();
 
-  factory Result.ok(T data) = Ok<T>;
-  factory Result.err(AppException error) = Err<T>;
+  const factory Result.ok(T data) = Ok<T>;
+  const factory Result.err(AppException error) = Err<T>;
 
   bool get isOk => this is Ok<T>;
   bool get isErr => this is Err<T>;
