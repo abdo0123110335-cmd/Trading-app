@@ -1,5 +1,5 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
-import 'package:intl/intl.dart';
 
 import 'package:binance_spot_pro/core/theme/app_theme.dart';
 import 'package:binance_spot_pro/data/models/candle.dart';
