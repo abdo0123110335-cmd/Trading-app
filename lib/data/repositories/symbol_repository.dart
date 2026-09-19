@@ -68,28 +68,29 @@ class SymbolRepository {
   }
 
   Future<void> syncFromExchangeInfo(List<Map<String, dynamic>> symbols) async {
+    final rows = <SymbolsCompanion>[];
+    for (final s in symbols) {
+      final f = parseFilters(s);
+      rows.add(
+        SymbolsCompanion.insert(
+          symbol: f.symbol,
+          baseAsset: s['baseAsset'] as String? ?? '',
+          quoteAsset: s['quoteAsset'] as String? ?? '',
+          status: s['status'] as String? ?? 'TRADING',
+          baseAssetPrecision: Value(f.basePrecision),
+          quoteAssetPrecision: Value(f.quotePrecision),
+          minQty: Value(f.minQty),
+          maxQty: Value(f.maxQty),
+          stepSize: Value(f.stepSize),
+          minNotional: Value(f.minNotional),
+          tickSize: Value(f.tickSize),
+          isSpotTradingAllowed: Value(s['isSpotTradingAllowed'] as bool? ?? true),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    }
     await _db.batch((batch) {
-      for (final s in symbols) {
-        final f = parseFilters(s);
-        batch.insertOnConflictUpdate(
-          _db.symbols,
-          SymbolsCompanion.insert(
-            symbol: f.symbol,
-            baseAsset: s['baseAsset'] as String? ?? '',
-            quoteAsset: s['quoteAsset'] as String? ?? '',
-            status: s['status'] as String? ?? 'TRADING',
-            baseAssetPrecision: Value(f.basePrecision),
-            quoteAssetPrecision: Value(f.quotePrecision),
-            minQty: Value(f.minQty),
-            maxQty: Value(f.maxQty),
-            stepSize: Value(f.stepSize),
-            minNotional: Value(f.minNotional),
-            tickSize: Value(f.tickSize),
-            isSpotTradingAllowed: Value(s['isSpotTradingAllowed'] as bool? ?? true),
-            updatedAt: Value(DateTime.now()),
-          ),
-        );
-      }
+      batch.insertAllOnConflictUpdate(_db.symbols, rows);
     });
   }
 
