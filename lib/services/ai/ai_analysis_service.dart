@@ -67,7 +67,7 @@ class AiAnalysisService {
 
       final choices = response.data?['choices'] as List<dynamic>?;
       final content = choices?.isNotEmpty == true
-          ? (choices!.first as Map<String, dynamic>)['message']?['content'] as String?
+          ? ((choices!.first as Map<String, dynamic>)['message']?['content'] as String?)
           : null;
 
       if (content == null || content.isEmpty) {
