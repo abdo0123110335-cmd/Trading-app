@@ -1,0 +1,70 @@
+name: binance_spot_pro
+description: "Binance Spot Pro — professional Binance Spot market analysis & trading companion. 100% on-device, no backend server."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- State management ---
+  flutter_riverpod: ^2.5.1
+  # Used specifically for the Chart screen's ChangeNotifier-based
+  # controller (pan/zoom/drawing state changes many times per frame during
+  # gestures — a plain ChangeNotifier + provider is the right tool there,
+  # separate from the Riverpod providers used everywhere else).
+  provider: ^6.1.2
+
+  # --- Networking ---
+  dio: ^5.4.3+1
+  web_socket_channel: ^2.4.5
+  connectivity_plus: ^6.0.3
+
+  # --- Local database ---
+  drift: ^2.18.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
+  # --- Security / secure storage ---
+  flutter_secure_storage: ^9.2.2
+  crypto: ^3.0.3
+
+  # --- Background execution ---
+  flutter_foreground_task: ^8.10.4
+
+  # --- Notifications ---
+  flutter_local_notifications: ^17.2.2
+
+  # --- Charts / UI ---
+  # Final charting library is selected in Phase 3 (candlestick chart engine).
+  # fl_chart is included now for simple sparklines/mini-charts used on Home/Markets.
+  fl_chart: ^0.68.0
+  google_fonts: ^6.2.1
+
+  # --- Utils ---
+  intl: ^0.19.0
+  collection: ^1.18.0
+  equatable: ^2.0.5
+  uuid: ^4.4.0
+  logger: ^2.4.0
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  drift_dev: ^2.18.0
+  build_runner: ^2.4.11
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/

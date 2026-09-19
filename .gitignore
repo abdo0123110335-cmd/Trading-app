@@ -1,0 +1,36 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+*.jks
+*.keystore
+key.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Generated code (regenerate with build_runner)
+**/*.g.dart
+**/*.freezed.dart
+
+# --- Security: never commit secrets ---
+# API keys/secrets are stored only in Android Keystore-backed secure
+# storage at runtime. They must never appear in source, .env files, or
+# config committed to this repo.
+*.env
+secrets.*

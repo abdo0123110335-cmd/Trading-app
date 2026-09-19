@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file replaces android/app/src/main/AndroidManifest.xml after you run
+  `flutter create .` to scaffold the native Android project (see README.md,
+  "Project setup" section, for why that step is needed).
+
+  Every permission below maps to a specific in-spec feature. None of them
+  are used to collect analytics or contact any server other than Binance.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- REST + WebSocket calls to Binance -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Local alert / signal notifications (Android 13+ requires runtime request) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Background Monitoring: WebSocket keep-alive + alert scanning while
+         the app is not in the foreground, started only when the user turns
+         "Monitoring" ON in Settings. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- Lets the foreground service resume promptly after device reboot
+         ONLY if the user had Monitoring turned on; no other autostart use. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Prevents Doze mode from killing the live price WebSocket while
+         Background Monitoring is active. Requested explicitly from
+         Settings, not silently. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <application
+        android:label="Binance Spot Pro"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+        <!-- Background Monitoring foreground service (Phase 6). Declared
+             here now so the manifest doesn't need touching again later. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+    </application>
+
+    <!-- Required by recent Android versions for apps that query package
+         visibility (e.g. "open in browser" for external docs links). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
+</manifest>
