@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide ChangeNotifierProvider;
+import 'package:provider/provider.dart' hide Provider;
 import 'package:provider/provider.dart';
 
 import 'package:binance_spot_pro/core/providers/core_providers.dart';
