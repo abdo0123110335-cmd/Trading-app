@@ -1,0 +1,119 @@
+name: Build Binance Spot Pro
+
+# Runs on every push/PR to main, and can also be triggered manually from
+# the Actions tab (Run workflow button) — useful for building a fresh
+# APK/AAB without pushing a commit.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  FLUTTER_CHANNEL: "stable"
+  JAVA_VERSION: "17"
+
+jobs:
+  build:
+    name: Analyze, test and build APK/AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java (required by the Android Gradle Plugin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      # The repository ships the app's Dart/Flutter code but not the
+      # generated native android/ project (Gradle wrapper, etc. — those
+      # are regenerated rather than hand-edited). If a contributor already
+      # committed android/, this step is skipped automatically.
+      - name: Scaffold the native Android project if missing
+        run: |
+          if [ ! -d "android" ]; then
+            echo "No android/ directory found — running flutter create ."
+            flutter create . --platforms=android --org com.binancespotpro --project-name binance_spot_pro
+          else
+            echo "android/ already present, skipping flutter create."
+          fi
+
+      - name: Apply the project's AndroidManifest.xml (permissions, foreground service)
+        run: |
+          if [ -f "android_overlay/AndroidManifest.xml" ]; then
+            cp android_overlay/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          else
+            echo "android_overlay/AndroidManifest.xml not found — skipping overlay copy."
+          fi
+
+      - name: Install Dart/Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate Drift database code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Static analysis
+        run: flutter analyze --no-fatal-infos
+        # Analyzer warnings shouldn't block a build artifact from being
+        # produced for review — remove continue-on-error once the project
+        # is fully lint-clean on your machine.
+        continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
+
+      # --- Optional release signing -------------------------------------
+      # If you've added the four secrets below in
+      # Settings > Secrets and variables > Actions, this step writes a
+      # real release keystore and key.properties before the build, so
+      # the APK/AAB are signed for distribution instead of falling back
+      # to Flutter's debug signing key.
+      #
+      # Required secrets:
+      #   ANDROID_KEYSTORE_BASE64   (base64 of your .jks/.keystore file)
+      #   ANDROID_KEYSTORE_PASSWORD
+      #   ANDROID_KEY_ALIAS
+      #   ANDROID_KEY_PASSWORD
+      - name: Decode release keystore (if configured)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Build release AAB (App Bundle, for Google Play)
+        run: flutter build appbundle --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binance-spot-pro-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binance-spot-pro-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
